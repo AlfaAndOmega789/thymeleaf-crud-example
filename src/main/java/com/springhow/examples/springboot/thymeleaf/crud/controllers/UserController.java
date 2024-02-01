@@ -16,7 +16,6 @@ import java.util.List;
 @Controller
 public class UserController {
 
-
     private final UserService userService;
 
     public UserController(UserService userService) {
@@ -34,8 +33,8 @@ public class UserController {
     @RequestMapping(path = "/", method = RequestMethod.POST)
     public RedirectView createUser(RedirectAttributes redirectAttributes, @ModelAttribute UserInfo userInfo) {
         userService.createUser(userInfo);
-        String message = "Created user <b>" + userInfo.getFirstName() + " " + userInfo.getLastName() + "</b> ✨.";
-        RedirectView redirectView = new RedirectView("/", true);
+        String message = "Created user " + userInfo.getFirstName() + " " + userInfo.getLastName();
+        RedirectView redirectView = new RedirectView("/");
         redirectAttributes.addFlashAttribute("userMessage", message);
         return redirectView;
     }
@@ -49,11 +48,14 @@ public class UserController {
 
     @RequestMapping(path = "/{id}", method = RequestMethod.POST)
     public RedirectView updateUser(RedirectAttributes redirectAttributes, @PathVariable("id") Integer id, @ModelAttribute UserInfo userInfo) {
-        userService.updateUser(id, userInfo);
-        String message = (userInfo.isActive() ? "Updated " : "Deleted ") + " user <b>" + userInfo.getFirstName() + " " + userInfo.getLastName() + "</b> ✨.";
-        RedirectView redirectView = new RedirectView("/", true);
+        if (userInfo.getWillDelete()) {
+            userService.deleteUser(id);
+        } else {
+            userService.updateUser(id, userInfo);
+        }
+        String message = (userInfo.getWillDelete() ? "Deleted ":"Updated ") + " user " + userInfo.getFirstName() + " " + userInfo.getLastName();
+        RedirectView redirectView = new RedirectView("/");
         redirectAttributes.addFlashAttribute("userMessage", message);
         return redirectView;
     }
-
 }

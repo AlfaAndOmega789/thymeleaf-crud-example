@@ -12,21 +12,23 @@ import java.util.List;
 public class UserService {
 
     private final UserInfoRepository userInfoRepository;
+    private Integer counter=0;
 
     public UserService(UserInfoRepository userInfoRepository) {
         this.userInfoRepository = userInfoRepository;
     }
 
     public UserInfo getUser(Integer id) {
-        return userInfoRepository.findByIdAndActive(id,true).orElseThrow(NotFoundException::new);
+        return userInfoRepository.findById(id).orElseThrow(NotFoundException::new);
     }
 
     public UserInfo createUser(UserInfo userInfo) {
+        userInfo.setId(++counter);
         return userInfoRepository.save(userInfo);
     }
 
     public List<UserInfo> getUsers() {
-        return userInfoRepository.findAllByActiveOrderByIdDesc(true);
+        return userInfoRepository.findAll();
     }
 
     public UserInfo updateUser(Integer id, UserInfo request) {
@@ -34,8 +36,12 @@ public class UserService {
         fromDb.setFirstName(request.getFirstName());
         fromDb.setLastName(request.getLastName());
         fromDb.setRole(request.getRole());
-        fromDb.setActive(request.isActive());
         fromDb.setUpdatedAt(LocalDateTime.now());
+        fromDb.setWillDelete(false);
         return userInfoRepository.save(fromDb);
+    }
+
+    public UserInfo deleteUser(Integer id){
+        return userInfoRepository.delete(id);
     }
 }
